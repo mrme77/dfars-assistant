@@ -6,6 +6,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 import streamlit as st
 
+from app import theme
 from src.generation.answer import DEFAULT_OPENROUTER_MODEL, answer_with_openrouter
 from src.generation.build_context import build_context_package
 from src.retrieval.hybrid_search import HybridSearcher
@@ -13,6 +14,12 @@ from src.retrieval.section_store import load_sections
 
 ENRICHED_INDEX_PATH = Path("indexes/dfars_sections_enriched.jsonl")
 BASE_INDEX_PATH = Path("indexes/dfars_sections.jsonl")
+
+EXAMPLE_QUESTIONS = [
+    "What does DFARS 252.204-7012 require for safeguarding covered defense information?",
+    "When must a contracting officer include the cyber incident reporting clause?",
+    "How does DFARS treat commercial item acquisitions?",
+]
 
 
 @st.cache_resource
@@ -25,12 +32,13 @@ def load_searcher() -> HybridSearcher:
 def main() -> None:
     """Render the Streamlit app."""
     load_dotenv()
-    st.set_page_config(page_title="DFARS Context Assistant", layout="wide")
-    st.title("DFARS Context Assistant")
-    st.caption(
-        "DFARS assistant: metadata-enhanced retrieval over indexed sections "
-        "with OpenRouter answers."
+    st.set_page_config(
+        page_title="DFARS Context Assistant",
+        page_icon="⚖️",
+        layout="centered",
     )
+    st.markdown(theme.BASE_CSS, unsafe_allow_html=True)
+    st.markdown(theme.hero(), unsafe_allow_html=True)
 
     if not _index_path().exists():
         st.error(
@@ -40,49 +48,103 @@ def main() -> None:
         return
 
     searcher = load_searcher()
+    result_limit, answer_enabled = _render_sidebar()
+
     question = st.text_area(
         "Question",
-        placeholder="Ask about a DFARS section or clause, such as 252.204-7012.",
+        key="question",
+        height=120,
+        label_visibility="collapsed",
+        placeholder="Ask about a DFARS section or clause, e.g. 252.204-7012 …",
     )
-    result_limit = st.slider("Sections to retrieve", min_value=1, max_value=12, value=6)
+    _render_examples()
 
-    answer_enabled = st.toggle("Generate answer with OpenRouter", value=True)
+    ask = st.button("Search DFARS", type="primary", disabled=not question.strip())
 
-    if st.button("Ask", disabled=not question.strip()):
-        results = searcher.search(question, limit=result_limit)
-        if not results:
-            st.warning("No relevant DFARS sections were found.")
-            return
+    if ask and question.strip():
+        _run_query(searcher, question.strip(), result_limit, answer_enabled)
 
-        context_package = build_context_package(question, results)
+    st.markdown(theme.disclaimer(), unsafe_allow_html=True)
 
-        if answer_enabled:
-            st.subheader("Answer")
-            with st.spinner("Generating answer from retrieved DFARS sections..."):
-                try:
-                    st.markdown(answer_with_openrouter(context_package))
-                except RuntimeError as exc:
-                    st.error(str(exc))
-                    st.info(
-                        "Set OPENROUTER_API_KEY in `.env`. "
-                        f"The default model is `{DEFAULT_OPENROUTER_MODEL}`."
-                    )
 
-        st.subheader("Retrieved Sections")
-        for result in results:
-            section = result.section
-            with st.expander(
-                f"DFARS {section.section_id}: {section.title} "
-                f"(pages {section.page_start}-{section.page_end})"
-            ):
-                st.caption(f"Retrieval: {result.retrieval_method} | Score: {result.score:.2f}")
-                st.text(section.original_text[:5000])
+def _render_sidebar() -> tuple[int, bool]:
+    """Render sidebar settings and return (result_limit, answer_enabled)."""
+    with st.sidebar:
+        st.markdown('<div class="dfars-brand">⚖️ DFARS Assistant</div>', unsafe_allow_html=True)
+        st.caption("Metadata-enhanced retrieval over indexed DFARS sections.")
+        st.divider()
 
-        st.subheader("Context Package Preview")
+        st.subheader("Retrieval")
+        result_limit = st.slider("Sections to retrieve", 1, 12, 6)
+        answer_enabled = st.toggle("Generate cited answer", value=True)
+
+        st.divider()
+        with st.expander("About"):
+            st.markdown(
+                "Answers are grounded in indexed DFARS source text. The original "
+                "regulation remains authoritative; summaries and topics only aid "
+                "retrieval.\n\n"
+                f"**Answer model:** `{DEFAULT_OPENROUTER_MODEL}`  \n"
+                f"**Sections indexed:** {len(load_searcher().store.sections):,}"
+            )
+    return result_limit, answer_enabled
+
+
+def _render_examples() -> None:
+    """Render clickable example questions."""
+    st.markdown(theme.label("Try an example"), unsafe_allow_html=True)
+    columns = st.columns(len(EXAMPLE_QUESTIONS))
+    for column, example in zip(columns, EXAMPLE_QUESTIONS, strict=False):
+        if column.button(example, key=f"ex-{example[:18]}"):
+            st.session_state["question"] = example
+            st.rerun()
+
+
+def _run_query(
+    searcher: HybridSearcher,
+    question: str,
+    result_limit: int,
+    answer_enabled: bool,
+) -> None:
+    """Execute retrieval, answer generation, and render results."""
+    results = searcher.search(question, limit=result_limit)
+    if not results:
+        st.warning("No relevant DFARS sections were found. Try rephrasing or a section id.")
+        return
+
+    context_package = build_context_package(question, results)
+
+    if answer_enabled:
+        st.markdown(theme.label("Answer"), unsafe_allow_html=True)
+        with st.spinner("Generating cited answer from retrieved DFARS sections…"):
+            try:
+                answer = answer_with_openrouter(context_package)
+                st.markdown(
+                    f'<div class="dfars-answer">{answer}</div>',
+                    unsafe_allow_html=True,
+                )
+            except RuntimeError as exc:
+                st.error(str(exc))
+                st.info(
+                    "Set `OPENROUTER_API_KEY` in the environment. "
+                    f"Default model: `{DEFAULT_OPENROUTER_MODEL}`."
+                )
+
+    st.markdown(theme.label(f"Retrieved sections ({len(results)})"), unsafe_allow_html=True)
+    for result in results:
+        with st.container(border=True):
+            st.markdown(theme.section_header(result), unsafe_allow_html=True)
+            if result.section.summary:
+                st.caption(result.section.summary)
+            with st.expander("Source text"):
+                st.text(result.section.original_text[:5000])
+
+    with st.expander("Context package sent to the model"):
         st.text_area(
-            "Context sent to the answer model",
+            "Context",
             value=context_package,
-            height=420,
+            height=360,
+            label_visibility="collapsed",
         )
 
 
