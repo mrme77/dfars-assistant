@@ -1,0 +1,19 @@
+.env*
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+dfars-env/
+.DS_Store
+Data/*.pdf
+indexes/vector_index/
+indexes/*.sqlite3
+indexes/*.db
+# local-only index artifacts (the deployed enriched index IS tracked)
+indexes/*.regex-backup.jsonl
+indexes/*_pilot.jsonl
+*.log
+app/reindex_app.py

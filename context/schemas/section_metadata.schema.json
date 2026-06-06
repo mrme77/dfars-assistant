@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DFARS Section Metadata",
+  "type": "object",
+  "required": ["section_id", "title", "page_start", "page_end", "original_text"],
+  "properties": {
+    "section_id": { "type": "string" },
+    "title": { "type": "string" },
+    "part": { "type": "string" },
+    "subpart": { "type": "string" },
+    "page_start": { "type": "integer", "minimum": 1 },
+    "page_end": { "type": "integer", "minimum": 1 },
+    "summary": { "type": "string" },
+    "key_topics": { "type": "array", "items": { "type": "string" } },
+    "obligations": { "type": "array", "items": { "type": "string" } },
+    "exceptions": { "type": "array", "items": { "type": "string" } },
+    "cross_references": { "type": "array", "items": { "type": "string" } },
+    "original_text": { "type": "string" }
+  }
+}
+

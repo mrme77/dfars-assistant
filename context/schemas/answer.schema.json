@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DFARS Answer",
+  "type": "object",
+  "required": ["answer", "sources"],
+  "properties": {
+    "answer": { "type": "string" },
+    "applicability_notes": { "type": "array", "items": { "type": "string" } },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["section_id", "page_start", "page_end"],
+        "properties": {
+          "section_id": { "type": "string" },
+          "title": { "type": "string" },
+          "page_start": { "type": "integer" },
+          "page_end": { "type": "integer" }
+        }
+      }
+    }
+  }
+}
+
