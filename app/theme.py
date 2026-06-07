@@ -168,6 +168,22 @@ html, body, [class*="css"], .stApp { font-family: var(--sans); }
   border-color: rgba(224,179,65,.5); color: var(--amber); background: var(--surface-2); transform: none;
 }
 
+/* ---- Help popover ---- */
+[data-testid="stPopover"] > button {
+  background: transparent; color: var(--muted); border: 1px dashed var(--line);
+  border-radius: 9px; font-family: var(--mono); font-size: .76rem; font-weight: 500;
+  letter-spacing: .02em; padding: .4rem .8rem; box-shadow: none;
+}
+[data-testid="stPopover"] > button:hover {
+  border-color: rgba(224,179,65,.5); color: var(--amber); background: var(--surface-2);
+  transform: none; filter: none;
+}
+[data-testid="stPopoverBody"] {
+  background: var(--surface) !important; border: 1px solid var(--line) !important;
+  border-radius: var(--radius) !important;
+}
+[data-testid="stPopoverBody"] .stMarkdown { font-size: .86rem; line-height: 1.55; }
+
 /* ---- Inputs ---- */
 .stTextArea textarea {
   background: var(--surface) !important; color: var(--ink) !important;
@@ -256,6 +272,36 @@ def section_header(result: RetrievedSection) -> str:
 def label(text: str) -> str:
     """Return a monospace section divider label."""
     return f'<div class="dfars-label">{html.escape(text)}</div>'
+
+
+def help_markdown() -> str:
+    """Return the 'how to use' guide shown in the help popover."""
+    return (
+        "**What this is.** A research assistant over the DFARS regulation. It "
+        "retrieves the most relevant sections for your question and answers from "
+        "their original text, with citations.\n\n"
+        "**Ask about:**\n"
+        "- **A specific clause or section** — e.g. `252.204-7012`. Naming an id "
+        "pulls that exact record.\n"
+        "- **Applicability** — *when* a clause or rule applies, and to whom.\n"
+        "- **Definitions** — what a DFARS term means.\n"
+        "- **Comparisons** — how two sections or clauses differ.\n"
+        "- **General explanation** — a plain-English summary of a topic.\n\n"
+        "**How it answers.** It selects the controlling sections, sends only those "
+        "to the model, and cites the **section id + page range** for each claim. "
+        "The original regulation text is the authority — summaries only help "
+        "retrieval.\n\n"
+        "**Examples:**\n"
+        "- *What does DFARS 252.204-7012 require for safeguarding covered defense "
+        "information?*\n"
+        "- *When must a contracting officer include the cyber incident reporting "
+        "clause?*\n"
+        "- *How does DFARS treat commercial item acquisitions?*\n\n"
+        "**Tips.** Use the sidebar to set how many sections to retrieve and to turn "
+        "answer generation on/off. Every result is expandable to read the verbatim "
+        "source text.\n\n"
+        "_Not legal advice — verify against the current regulation._"
+    )
 
 
 def disclaimer() -> str:

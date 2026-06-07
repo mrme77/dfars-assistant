@@ -52,6 +52,9 @@ def main() -> None:
     searcher = load_searcher()
     result_limit, answer_enabled = _render_sidebar()
 
+    with st.popover("❔ How to use this assistant", use_container_width=False):
+        st.markdown(theme.help_markdown())
+
     question = st.text_area(
         "Question",
         key="question",
