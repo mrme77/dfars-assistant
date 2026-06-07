@@ -16,9 +16,9 @@ ENRICHED_INDEX_PATH = Path("indexes/dfars_sections_enriched.jsonl")
 BASE_INDEX_PATH = Path("indexes/dfars_sections.jsonl")
 
 EXAMPLE_QUESTIONS = [
-    "What does DFARS 252.204-7012 require for safeguarding covered defense information?",
-    "When must a contracting officer include the cyber incident reporting clause?",
-    "How does DFARS treat commercial item acquisitions?",
+    ("252.204-7012 safeguarding", "What does DFARS 252.204-7012 require for safeguarding covered defense information?"),
+    ("Cyber incident reporting", "When must a contracting officer include the cyber incident reporting clause?"),
+    ("Commercial item rules", "How does DFARS treat commercial item acquisitions?"),
 ]
 
 
@@ -90,14 +90,24 @@ def _render_sidebar() -> tuple[int, bool]:
     return result_limit, answer_enabled
 
 
+def _use_example(question: str) -> None:
+    """Callback: load an example into the question box before the widget rebuilds."""
+    st.session_state["question"] = question
+
+
 def _render_examples() -> None:
     """Render clickable example questions."""
     st.markdown(theme.label("Try an example"), unsafe_allow_html=True)
+    st.markdown('<div class="dfars-examples">', unsafe_allow_html=True)
     columns = st.columns(len(EXAMPLE_QUESTIONS))
-    for column, example in zip(columns, EXAMPLE_QUESTIONS, strict=False):
-        if column.button(example, key=f"ex-{example[:18]}"):
-            st.session_state["question"] = example
-            st.rerun()
+    for column, (short_label, full_question) in zip(columns, EXAMPLE_QUESTIONS, strict=False):
+        column.button(
+            short_label,
+            key=f"ex-{short_label}",
+            on_click=_use_example,
+            args=(full_question,),
+        )
+    st.markdown("</div>", unsafe_allow_html=True)
 
 
 def _run_query(
@@ -119,16 +129,16 @@ def _run_query(
         with st.spinner("Generating cited answer from retrieved DFARS sections…"):
             try:
                 answer = answer_with_openrouter(context_package)
-                st.markdown(
-                    f'<div class="dfars-answer">{answer}</div>',
-                    unsafe_allow_html=True,
-                )
             except RuntimeError as exc:
                 st.error(str(exc))
                 st.info(
                     "Set `OPENROUTER_API_KEY` in the environment. "
                     f"Default model: `{DEFAULT_OPENROUTER_MODEL}`."
                 )
+            else:
+                with st.container(border=True):
+                    st.markdown(theme.eyebrow("◆ Answer"), unsafe_allow_html=True)
+                    st.markdown(answer)
 
     st.markdown(theme.label(f"Retrieved sections ({len(results)})"), unsafe_allow_html=True)
     for result in results:

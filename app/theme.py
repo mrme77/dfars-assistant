@@ -1,4 +1,9 @@
-"""Visual theme and reusable UI fragments for the DFARS assistant."""
+"""Dark "defense terminal" theme and reusable UI fragments.
+
+Design direction: an institutional, document-forward console for defense
+acquisition regulation. Near-black cool charcoal, signal-amber accent, and
+IBM Plex (Sans + Mono) so clause identifiers read like precise codes.
+"""
 
 from __future__ import annotations
 
@@ -6,112 +11,170 @@ import html
 
 from src.models import RetrievedSection
 
-#: Global stylesheet. Defines design tokens in :root and restyles Streamlit
-#: defaults for a professional, document-forward look.
+#: Global stylesheet. Pairs with .streamlit/config.toml (base="dark") so native
+#: Streamlit widgets render dark; this refines structure, type, and accents.
 BASE_CSS = """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 :root {
-  --navy-900: #0b1f3a;
-  --navy-700: #13315c;
-  --navy-600: #1c4587;
-  --accent:   #2563eb;
-  --accent-soft: #e8f0fe;
-  --ink:      #1a2433;
-  --muted:    #5b6675;
-  --line:     #e4e8ee;
-  --surface:  #ffffff;
-  --canvas:   #f4f6fa;
-  --good:     #0f766e;
-  --radius:   14px;
-  --shadow:   0 1px 2px rgba(16,24,40,.04), 0 8px 24px rgba(16,24,40,.06);
+  --bg:        #0a0d12;
+  --surface:   #12161f;
+  --surface-2: #1a2030;
+  --line:      #283041;
+  --line-soft: #1c2433;
+  --ink:       #e9e6df;
+  --muted:     #939cab;
+  --faint:     #69727f;
+  --amber:     #e0b341;
+  --amber-dim: #b8881f;
+  --amber-soft: rgba(224,179,65,.12);
+  --teal:      #4cc4b0;
+  --teal-soft: rgba(76,196,176,.12);
+  --violet:    #a78bfa;
+  --violet-soft: rgba(167,139,250,.12);
+  --radius:    12px;
+  --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+  --sans: 'IBM Plex Sans', system-ui, sans-serif;
 }
 
-html, body, [class*="css"] { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-.stApp { background: var(--canvas); }
-.block-container { padding-top: 2.2rem; max-width: 980px; }
+html, body, [class*="css"], .stApp { font-family: var(--sans); }
+.stApp {
+  background:
+    radial-gradient(1100px 520px at 50% -8%, #141d2e 0%, rgba(20,29,46,0) 60%),
+    var(--bg);
+}
+.block-container { padding-top: 2rem; padding-bottom: 3rem; max-width: 940px; }
+#MainMenu, header[data-testid="stHeader"], footer { visibility: hidden; height: 0; }
 
-/* Hero header */
+/* ---- Hero ---- */
 .dfars-hero {
-  background: linear-gradient(135deg, var(--navy-900) 0%, var(--navy-600) 100%);
+  position: relative;
+  border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 1.6rem 1.8rem;
-  color: #fff;
-  box-shadow: var(--shadow);
-  margin-bottom: 1.4rem;
+  background:
+    linear-gradient(180deg, rgba(224,179,65,.05), rgba(224,179,65,0) 40%),
+    var(--surface);
+  padding: 1.7rem 1.8rem 1.5rem;
+  overflow: hidden;
+}
+.dfars-hero::before {
+  content: ""; position: absolute; inset: 0 0 auto 0; height: 2px;
+  background: linear-gradient(90deg, var(--amber-dim), var(--amber), transparent 70%);
 }
 .dfars-hero .eyebrow {
-  font-size: .72rem; letter-spacing: .14em; text-transform: uppercase;
-  color: #9db8e6; font-weight: 600; margin-bottom: .35rem;
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .22em;
+  text-transform: uppercase; color: var(--amber); font-weight: 500; margin-bottom: .6rem;
 }
 .dfars-hero h1 {
-  font-size: 1.7rem; font-weight: 700; margin: 0; line-height: 1.15; color:#fff;
+  font-size: 1.85rem; font-weight: 700; letter-spacing: -.01em;
+  margin: 0; color: var(--ink); line-height: 1.1;
 }
-.dfars-hero p { margin: .5rem 0 0; color: #c8d6ee; font-size: .95rem; max-width: 60ch; }
+.dfars-hero p { margin: .6rem 0 0; color: var(--muted); font-size: .92rem; max-width: 62ch; }
 
-/* Section labels */
+/* ---- Eyebrow labels ---- */
 .dfars-label {
-  font-size: .74rem; letter-spacing: .1em; text-transform: uppercase;
-  color: var(--muted); font-weight: 600; margin: 1.4rem 0 .6rem;
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--faint); font-weight: 500;
+  margin: 1.6rem 0 .7rem; display: flex; align-items: center; gap: .6rem;
+}
+.dfars-label::after { content: ""; flex: 1; height: 1px; background: var(--line-soft); }
+.dfars-eyebrow {
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--amber); font-weight: 600; margin-bottom: .5rem;
 }
 
-/* Answer card */
-.dfars-answer {
-  background: var(--surface); border: 1px solid var(--line);
-  border-left: 4px solid var(--accent);
-  border-radius: var(--radius); padding: 1.3rem 1.5rem;
-  box-shadow: var(--shadow);
-  font-family: 'Source Serif 4', Georgia, serif; font-size: 1.02rem; line-height: 1.6;
-  color: var(--ink);
+/* ---- Cards (bordered containers) ---- */
+[data-testid="stVerticalBlockBorderWrapper"] {
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius) !important;
 }
-.dfars-answer p:first-child { margin-top: 0; }
+/* the answer card is the only bordered container holding an .dfars-eyebrow */
+[data-testid="stVerticalBlockBorderWrapper"]:has(.dfars-eyebrow) {
+  border-left: 3px solid var(--amber) !important;
+  background: linear-gradient(180deg, rgba(224,179,65,.05), rgba(224,179,65,0) 30%), var(--surface) !important;
+}
+[data-testid="stVerticalBlockBorderWrapper"]:has(.dfars-eyebrow) .stMarkdown {
+  font-size: 1rem; line-height: 1.62; color: var(--ink);
+}
 
-/* Badges / pills */
-.dfars-badges { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; margin-bottom: .25rem; }
+/* ---- Badges ---- */
+.dfars-badges { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; margin-bottom: .55rem; }
 .pill {
-  display: inline-flex; align-items: center; gap: .3rem;
-  font-size: .76rem; font-weight: 600; padding: .18rem .55rem; border-radius: 999px;
-  border: 1px solid var(--line); color: var(--muted); background: #fafbfc;
+  font-family: var(--mono); font-size: .72rem; font-weight: 500;
+  padding: .2rem .55rem; border-radius: 6px;
+  border: 1px solid var(--line); color: var(--muted); background: var(--surface-2);
+  display: inline-flex; align-items: center; letter-spacing: .02em;
 }
-.pill.id { background: var(--navy-700); color:#fff; border-color: var(--navy-700); letter-spacing:.02em; }
-.pill.method-exact { background:#ecfdf5; color: var(--good); border-color:#bbf7d0; }
-.pill.method-bm25 { background: var(--accent-soft); color: var(--navy-600); border-color:#cfe0fb; }
-.pill.method-vector { background:#f5f3ff; color:#6d28d9; border-color:#e9d5ff; }
-.pill.pages { background:#fff; }
+.pill.id {
+  color: var(--amber); border-color: rgba(224,179,65,.4); background: var(--amber-soft);
+  font-weight: 600;
+}
+.pill.method-exact  { color: var(--teal);   border-color: rgba(76,196,176,.4);  background: var(--teal-soft); }
+.pill.method-bm25   { color: var(--amber);  border-color: rgba(224,179,65,.35); background: var(--amber-soft); }
+.pill.method-vector { color: var(--violet); border-color: rgba(167,139,250,.4); background: var(--violet-soft); }
+.pill.pages, .pill.score { color: var(--faint); }
+.sec-title { font-size: 1.04rem; font-weight: 600; color: var(--ink); margin: .1rem 0 .5rem; letter-spacing: -.005em; }
+.topics { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .1rem; }
 .topic {
-  display:inline-block; font-size:.74rem; color: var(--navy-600);
-  background: var(--accent-soft); border:1px solid #d7e4fb;
-  padding:.12rem .5rem; border-radius:6px; margin:.15rem .25rem .15rem 0;
+  font-family: var(--mono); font-size: .7rem; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft);
+  padding: .12rem .45rem; border-radius: 5px;
 }
-.sec-title { font-size:1.02rem; font-weight:600; color: var(--ink); margin:.35rem 0 .15rem; }
 
-/* Buttons */
+/* ---- Buttons ---- */
 .stButton > button {
-  background: var(--accent); color:#fff; border:0; border-radius:10px;
-  padding:.55rem 1.4rem; font-weight:600; font-size:.95rem;
-  box-shadow: 0 1px 2px rgba(37,99,235,.3); transition: filter .15s ease;
+  background: var(--amber); color: #1a1206; border: 0; border-radius: 9px;
+  padding: .55rem 1.5rem; font-weight: 600; font-size: .92rem; font-family: var(--sans);
+  transition: transform .12s ease, filter .12s ease;
 }
-.stButton > button:hover { filter: brightness(1.07); color:#fff; }
-.stButton > button:disabled { background:#aebfd6; box-shadow:none; }
+.stButton > button:hover { filter: brightness(1.08); transform: translateY(-1px); color: #1a1206; }
+.stButton > button:active { transform: translateY(0); }
+.stButton > button:disabled { background: #2a313e; color: var(--faint); }
+/* secondary (example) buttons */
+.dfars-examples .stButton > button {
+  background: var(--surface); color: var(--muted); border: 1px solid var(--line);
+  font-family: var(--mono); font-size: .74rem; font-weight: 500; letter-spacing: .02em;
+  padding: .45rem .7rem; width: 100%; text-align: left; line-height: 1.3;
+}
+.dfars-examples .stButton > button:hover {
+  border-color: rgba(224,179,65,.5); color: var(--amber); background: var(--surface-2); transform: none;
+}
 
-/* Inputs */
+/* ---- Inputs ---- */
 .stTextArea textarea {
-  border-radius: 12px !important; border:1px solid var(--line) !important;
-  font-size: 1rem !important; background: var(--surface) !important;
+  background: var(--surface) !important; color: var(--ink) !important;
+  border: 1px solid var(--line) !important; border-radius: 11px !important;
+  font-size: 1rem !important; font-family: var(--sans) !important;
 }
-.stTextArea textarea:focus { border-color: var(--accent) !important; box-shadow:0 0 0 3px var(--accent-soft) !important; }
+.stTextArea textarea::placeholder { color: var(--faint) !important; }
+.stTextArea textarea:focus {
+  border-color: var(--amber) !important; box-shadow: 0 0 0 3px var(--amber-soft) !important;
+}
 
-/* Sidebar */
-section[data-testid="stSidebar"] { background: var(--surface); border-right:1px solid var(--line); }
-section[data-testid="stSidebar"] .dfars-brand { font-weight:700; color:var(--navy-700); font-size:1.05rem; }
+/* ---- Expanders ---- */
+[data-testid="stExpander"] details {
+  background: var(--surface) !important; border: 1px solid var(--line) !important;
+  border-radius: 9px !important;
+}
+[data-testid="stExpander"] summary { color: var(--muted) !important; font-size: .85rem; }
+[data-testid="stExpander"] summary:hover { color: var(--amber) !important; }
 
-/* Disclaimer */
+/* ---- Sidebar ---- */
+section[data-testid="stSidebar"] { background: #0c0f15; border-right: 1px solid var(--line-soft); }
+section[data-testid="stSidebar"] .dfars-brand {
+  font-family: var(--mono); font-weight: 600; color: var(--amber);
+  font-size: .82rem; letter-spacing: .14em; text-transform: uppercase;
+}
+
+/* ---- Footer disclaimer ---- */
 .dfars-footer {
-  margin-top: 2rem; padding-top: 1rem; border-top:1px solid var(--line);
-  color: var(--muted); font-size:.8rem; line-height:1.5;
+  margin-top: 2.4rem; padding: 1rem 1.1rem; border-radius: 10px;
+  border: 1px solid var(--line-soft); background: rgba(224,179,65,.04);
+  color: var(--muted); font-size: .78rem; line-height: 1.55;
 }
-#MainMenu, footer { visibility: hidden; }
+.dfars-footer strong { color: var(--amber); font-weight: 600; }
 </style>
 """
 
@@ -122,22 +185,28 @@ def hero() -> str:
         '<div class="dfars-hero">'
         '<div class="eyebrow">Defense Federal Acquisition Regulation Supplement</div>'
         "<h1>DFARS Context Assistant</h1>"
-        "<p>Cited answers grounded in indexed DFARS sections. Ask about a clause, "
-        "an applicability condition, or a definition.</p>"
+        "<p>Cited answers grounded in indexed DFARS source text. Query a clause, an "
+        "applicability condition, or a definition &mdash; retrieval returns the "
+        "controlling sections, verbatim.</p>"
         "</div>"
     )
 
 
+def eyebrow(text: str) -> str:
+    """Return an amber monospace eyebrow (e.g. above the answer)."""
+    return f'<div class="dfars-eyebrow">{html.escape(text)}</div>'
+
+
 def section_header(result: RetrievedSection) -> str:
-    """Return the badge + title HTML for a retrieved section."""
+    """Return the badge + title + topics HTML for a retrieved section."""
     section = result.section
     method = html.escape(result.retrieval_method)
     badges = (
         '<div class="dfars-badges">'
-        f'<span class="pill id">DFARS {html.escape(section.section_id)}</span>'
-        f'<span class="pill pages">pp. {section.page_start}–{section.page_end}</span>'
+        f'<span class="pill id">{html.escape(section.section_id)}</span>'
+        f'<span class="pill pages">pp.&nbsp;{section.page_start}&ndash;{section.page_end}</span>'
         f'<span class="pill method-{method}">{method}</span>'
-        f'<span class="pill">score {result.score:,.0f}</span>'
+        f'<span class="pill score">score&nbsp;{result.score:,.0f}</span>'
         "</div>"
     )
     title = f'<div class="sec-title">{html.escape(section.title)}</div>'
@@ -147,12 +216,12 @@ def section_header(result: RetrievedSection) -> str:
             f'<span class="topic">{html.escape(topic)}</span>'
             for topic in section.key_topics[:6]
         )
-        topics = f"<div>{chips}</div>"
+        topics = f'<div class="topics">{chips}</div>'
     return badges + title + topics
 
 
 def label(text: str) -> str:
-    """Return a small uppercase section label."""
+    """Return a monospace section divider label."""
     return f'<div class="dfars-label">{html.escape(text)}</div>'
 
 
@@ -160,9 +229,9 @@ def disclaimer() -> str:
     """Return the footer disclaimer HTML."""
     return (
         '<div class="dfars-footer">'
-        "<strong>Not legal advice.</strong> This assistant retrieves and summarizes "
-        "DFARS source text to support research. Answers may be incomplete or out of "
-        "date. Verify against the current regulation and consult counsel before relying "
-        "on any determination."
+        "<strong>Not legal advice.</strong> This tool retrieves and summarizes DFARS "
+        "source text for research. Answers may be incomplete or out of date. Verify "
+        "against the current regulation and consult counsel before relying on any "
+        "determination."
         "</div>"
     )
