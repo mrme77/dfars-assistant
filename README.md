@@ -1,3 +1,14 @@
+---
+title: DFARS Context Assistant
+emoji: ⚖️
+colorFrom: gray
+colorTo: yellow
+sdk: streamlit
+sdk_version: 1.58.0
+app_file: app.py
+pinned: false
+---
+
 # DFARS Context Assistant
 
 Ask cited questions over the DFARS regulation. The 1,466-page PDF is
