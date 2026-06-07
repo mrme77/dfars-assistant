@@ -56,6 +56,10 @@ def main() -> None:
         height=120,
         label_visibility="collapsed",
         placeholder="Ask about a DFARS section or clause, e.g. 252.204-7012 …",
+        help=(
+            "Naming a clause id (e.g. 252.204-7012) triggers exact lookup; "
+            "plain-language questions use metadata-enhanced keyword search."
+        ),
     )
     _render_examples()
 
@@ -75,8 +79,26 @@ def _render_sidebar() -> tuple[int, bool]:
         st.divider()
 
         st.subheader("Retrieval")
-        result_limit = st.slider("Sections to retrieve", 1, 12, 6)
-        answer_enabled = st.toggle("Generate cited answer", value=True)
+        result_limit = st.slider(
+            "Sections to retrieve",
+            1,
+            12,
+            6,
+            help=(
+                "How many DFARS sections to pull into context. Higher = broader "
+                "coverage but more tokens and possible noise; lower = tighter, "
+                "faster, cheaper. 4–6 suits most questions."
+            ),
+        )
+        answer_enabled = st.toggle(
+            "Generate cited answer",
+            value=True,
+            help=(
+                "On: send retrieved sections to the model for a cited answer "
+                "(needs OPENROUTER_API_KEY). Off: show retrieved sections only — "
+                "no model call, no cost."
+            ),
+        )
 
         st.divider()
         with st.expander("About"):

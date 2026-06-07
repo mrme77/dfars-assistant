@@ -46,6 +46,9 @@ html, body, [class*="css"], .stApp { font-family: var(--sans); }
 }
 .block-container { padding-top: 2rem; padding-bottom: 3rem; max-width: 940px; }
 #MainMenu, header[data-testid="stHeader"], footer { visibility: hidden; height: 0; }
+/* hide Streamlit's auto header anchor-link (chain) icons */
+[data-testid="stHeaderActionElements"] { display: none !important; }
+.stMarkdown a.anchor-link, h1 > a, h2 > a, h3 > a, h4 > a { display: none !important; }
 
 /* ---- Hero ---- */
 .dfars-hero {
@@ -69,6 +72,29 @@ html, body, [class*="css"], .stApp { font-family: var(--sans); }
 .dfars-hero h1 {
   font-size: 1.85rem; font-weight: 700; letter-spacing: -.01em;
   margin: 0; color: var(--ink); line-height: 1.1;
+}
+
+/* ---- Inline info tooltip (legal notice by the title) ---- */
+.dfars-info {
+  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  width: 1.15rem; height: 1.15rem; margin-left: .55rem; vertical-align: middle;
+  font-family: var(--mono); font-size: .72rem; font-weight: 600; cursor: help;
+  color: var(--amber); border: 1px solid rgba(224,179,65,.5); border-radius: 50%;
+  background: var(--amber-soft); transition: background .15s ease;
+}
+.dfars-info:hover, .dfars-info:focus-visible { background: rgba(224,179,65,.22); outline: none; }
+.dfars-tip {
+  position: absolute; top: 150%; left: 0; z-index: 50; width: 290px;
+  background: var(--surface-2); border: 1px solid var(--line);
+  border-left: 3px solid var(--amber); border-radius: 9px; padding: .7rem .85rem;
+  font-family: var(--sans); font-size: .76rem; font-weight: 400; line-height: 1.5;
+  color: var(--muted); text-transform: none; letter-spacing: normal;
+  box-shadow: 0 10px 30px rgba(0,0,0,.45);
+  opacity: 0; visibility: hidden; transform: translateY(-4px); transition: all .16s ease;
+}
+.dfars-tip strong { color: var(--amber); font-weight: 600; }
+.dfars-info:hover .dfars-tip, .dfars-info:focus-visible .dfars-tip {
+  opacity: 1; visibility: visible; transform: translateY(0);
 }
 .dfars-hero p { margin: .6rem 0 0; color: var(--muted); font-size: .92rem; max-width: 62ch; }
 
@@ -180,11 +206,18 @@ section[data-testid="stSidebar"] .dfars-brand {
 
 
 def hero() -> str:
-    """Return the hero header HTML."""
+    """Return the hero header HTML, with a legal-notice tooltip by the title."""
+    tip = (
+        '<span class="dfars-info" tabindex="0" role="note" aria-label="Legal notice">i'
+        '<span class="dfars-tip"><strong>Not legal advice.</strong> Retrieves and '
+        "summarizes DFARS source text for research. Answers may be incomplete or out "
+        "of date &mdash; verify against the current regulation and consult counsel "
+        "before relying on any determination.</span></span>"
+    )
     return (
         '<div class="dfars-hero">'
         '<div class="eyebrow">Defense Federal Acquisition Regulation Supplement</div>'
-        "<h1>DFARS Context Assistant</h1>"
+        f"<h1>DFARS Context Assistant{tip}</h1>"
         "<p>Cited answers grounded in indexed DFARS source text. Query a clause, an "
         "applicability condition, or a definition &mdash; retrieval returns the "
         "controlling sections, verbatim.</p>"
