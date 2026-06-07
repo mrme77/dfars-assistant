@@ -6,7 +6,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 import streamlit as st
 
-from app import theme
+from app import auth, theme
 from src.generation.answer import DEFAULT_OPENROUTER_MODEL, answer_with_openrouter
 from src.generation.build_context import build_context_package
 from src.retrieval.hybrid_search import HybridSearcher
@@ -39,6 +39,8 @@ def main() -> None:
     )
     st.markdown(theme.BASE_CSS, unsafe_allow_html=True)
     st.markdown(theme.hero(), unsafe_allow_html=True)
+
+    auth.require_login()  # halts here until signed in (when auth is configured)
 
     if not _index_path().exists():
         st.error(
@@ -109,6 +111,10 @@ def _render_sidebar() -> tuple[int, bool]:
                 f"**Answer model:** `{DEFAULT_OPENROUTER_MODEL}`  \n"
                 f"**Sections indexed:** {len(load_searcher().store.sections):,}"
             )
+
+        if auth.auth_enabled():
+            st.divider()
+            auth.sign_out_button()
     return result_limit, answer_enabled
 
 

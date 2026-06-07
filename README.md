@@ -138,6 +138,29 @@ OLLAMA_EMBED_MODEL=nomic-embed-text:latest
 The answer model is `google/gemini-2.5-flash-lite-preview-09-2025`
 (`src/generation/answer.py`).
 
+## Authentication (optional)
+
+A single shared login gates the app **only when `DFARS_AUTH_PASSWORD_HASH` is
+set** (a bcrypt hash). Unset → the app runs open, which is convenient locally.
+
+Generate a hash without exposing the plaintext, then store the printed values:
+
+```bash
+dfars-env/bin/python -m app.auth
+```
+
+```text
+DFARS_AUTH_USERNAME=dfars
+DFARS_AUTH_PASSWORD_HASH=$2b$12$...        # bcrypt hash, never the plaintext
+```
+
+- **Local:** put both lines in `.env` (git-ignored); `load_dotenv()` reads them.
+- **Hugging Face:** set both as Space **Secrets** (`.env` is not deployed).
+
+Login does a constant-time username check plus `bcrypt.checkpw`, returns a
+generic error, and applies a short lockout after repeated failures. Sessions are
+held in `st.session_state`, so a hard refresh requires signing in again.
+
 ## Testing
 
 ```bash
