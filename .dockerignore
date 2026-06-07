@@ -1,0 +1,29 @@
+# Keep secrets, local envs, and build cruft out of the Docker build context.
+# (HF builds from the git tree where .env is already ignored; this also protects
+#  local `docker build`, where .env DOES exist, and shrinks the image.)
+.env
+.env.*
+.git
+.gitignore
+.gitattributes
+.dockerignore
+
+# virtualenvs / caches
+dfars-env/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.DS_Store
+.claude/
+
+# not needed at runtime
+tests/
+Data/
+*.log
+indexes/vector_index/
+indexes/*.regex-backup.jsonl
+indexes/*_pilot.jsonl
