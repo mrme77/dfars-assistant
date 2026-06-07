@@ -191,6 +191,8 @@ html, body, [class*="css"], .stApp { font-family: var(--sans); }
   font-size: 1rem !important; font-family: var(--sans) !important;
 }
 .stTextArea textarea::placeholder { color: var(--faint) !important; }
+/* hide the "Press ⌘+Enter to apply" helper under inputs */
+[data-testid="InputInstructions"] { display: none !important; }
 .stTextArea textarea:focus {
   border-color: var(--amber) !important; box-shadow: 0 0 0 3px var(--amber-soft) !important;
 }

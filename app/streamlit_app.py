@@ -66,9 +66,13 @@ def main() -> None:
             "plain-language questions use metadata-enhanced keyword search."
         ),
     )
+    ask = st.button(
+        "Search DFARS",
+        type="primary",
+        use_container_width=True,
+        disabled=not question.strip(),
+    )
     _render_examples()
-
-    ask = st.button("Search DFARS", type="primary", disabled=not question.strip())
 
     if ask and question.strip():
         _run_query(searcher, question.strip(), result_limit, answer_enabled)
