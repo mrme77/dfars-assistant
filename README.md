@@ -9,6 +9,17 @@ The original regulatory text remains the authoritative source for every answer;
 the enriched metadata exists to help retrieval find the right sections and help
 the model orient itself.
 
+## Preview
+
+A question resolves to a cited answer plus the exact DFARS sections it drew from:
+
+![DFARS Context Assistant — question and cited answer](docs/images/app-overview.png)
+
+Each retrieved section shows its identifier, page range, retrieval method, key
+topics, and the verbatim source text:
+
+![Retrieved DFARS section with metadata and source text](docs/images/retrieved-section.png)
+
 ## Why this is more reliable than a generic chatbot
 
 - Answers are grounded in indexed DFARS source text, with section + page citations.
