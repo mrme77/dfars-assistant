@@ -42,6 +42,8 @@ OpenRouter answer. No Ollama/Chroma/torch on the Space.
 | `src/generation/build_context.py` | budgeted, labeled context package |
 | `src/generation/answer.py` | OpenRouter call + system prompt |
 | `app/streamlit_app.py`, `app.py` | UI; `app.py` is the HF entry point |
+| `app/theme.py` | dark "defense terminal" CSS + UI fragments (hero, cards, help) |
+| `app/auth.py` | optional shared login (bcrypt); active iff `DFARS_AUTH_PASSWORD_HASH` set |
 
 ## Conventions specific to this repo
 
@@ -67,7 +69,33 @@ OLLAMA_NUM_PARALLEL=4 PYTHONPATH=. dfars-env/bin/python \
 
 # run app locally
 dfars-env/bin/python -m streamlit run app/streamlit_app.py
+
+# generate an auth hash (prints DFARS_AUTH_* lines; plaintext never stored)
+dfars-env/bin/python -m app.auth
 ```
+
+## Deployment
+
+Two git remotes hold the same code:
+
+- `dfars-assistant` → GitHub (github.com/mrme77/dfars-assistant) — source of truth.
+- `hf` → Hugging Face Space (huggingface.co/spaces/mrme77/dfars-assistant) — runs
+  the app as a **Docker** Space (HF dropped the native Streamlit SDK).
+
+**Dual-branch quirk:** GitHub `main` has a clean README; HF **requires** a YAML
+frontmatter block in `README.md` (`sdk: docker`, `app_port: 7860`) or the Space
+fails with `CONFIG_ERROR`. That frontmatter lives only on the **`hf-deploy`**
+branch, which is pushed to HF `main`. So:
+
+```bash
+git push dfars-assistant main                 # GitHub (clean)
+git checkout hf-deploy && git merge main && git push hf hf-deploy:main && git checkout main
+```
+
+`Dockerfile` runs Streamlit on port 7860. Runtime secrets (`OPENROUTER_API_KEY`,
+`DFARS_AUTH_USERNAME`, `DFARS_AUTH_PASSWORD_HASH`) are set in the HF Space
+**Secrets** UI, never committed. A GitHub Action could automate the sync later
+(injecting frontmatter), which would retire the `hf-deploy` branch.
 
 ## Guardrails
 
