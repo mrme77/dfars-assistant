@@ -1,13 +1,3 @@
----
-title: DFARS Context Assistant
-emoji: ⚖️
-colorFrom: gray
-colorTo: yellow
-sdk: docker
-app_port: 7860
-pinned: false
----
-
 # DFARS Context Assistant
 
 Ask cited questions over the DFARS regulation. The 1,466-page PDF is
@@ -188,3 +178,7 @@ The project is organized around four moves; see
   under an explicit character budget.
 - **Isolate** — keep instructions, source text, retrieval metadata, and the
   user question in separate, labeled blocks.
+
+## License
+
+[MIT](LICENSE) © Pasquale Salomone
