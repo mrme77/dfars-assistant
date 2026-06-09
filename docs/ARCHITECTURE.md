@@ -99,9 +99,15 @@ Adds metadata to each record. Two kinds of fields:
 
 ### App (`app/`)
 
-- `streamlit_app.py` — loads the index (prefers enriched), runs search, builds
-  the context package, optionally calls OpenRouter, and shows answer, retrieved
-  sections, and a context preview.
+- `streamlit_app.py` — gates on `auth.require_login()`, loads the index (prefers
+  enriched), runs search, builds the context package, optionally calls
+  OpenRouter, and shows the answer, retrieved-section cards, a help popover, and
+  a context preview.
+- `theme.py` — the dark "defense terminal" stylesheet plus HTML fragments (hero,
+  section badges/cards, help guide, disclaimer).
+- `auth.py` — optional single shared login. Active only when
+  `DFARS_AUTH_PASSWORD_HASH` is set: constant-time username check +
+  `bcrypt.checkpw`, generic errors, attempt lockout, hash-generator CLI.
 - `app.py` (repo root) — Hugging Face Spaces entry point that imports and runs
   `streamlit_app.main`.
 
@@ -109,8 +115,19 @@ Adds metadata to each record. Two kinds of fields:
 
 | Concern | Local | Hosted (HF Space) |
 | --- | --- | --- |
-| Deps | `requirements-local.txt` | `requirements.txt` (5 pkgs) |
+| Deps | `requirements-local.txt` | `requirements.txt` (6 pkgs) |
 | Retrieval | exact + BM25 (+ optional vectors) | exact + BM25 |
 | Embeddings/LLM enrichment | Ollama | not used |
 | Answer model | OpenRouter | OpenRouter |
 | Index | rebuilt locally | committed JSONL |
+| Auth | open (no hash set) | shared login via Space secret |
+| Runtime | `streamlit run` | Docker Space, port 7860 |
+
+## Deployment
+
+The HF Space runs as a **Docker** Space (HF removed the native Streamlit SDK).
+`Dockerfile` serves Streamlit on port 7860; `.dockerignore` keeps `.env`, the
+venv, caches, and tests out of the image. The same code lives on two remotes —
+GitHub (`dfars-assistant`, clean README) and the HF Space (`hf`). HF requires a
+README YAML frontmatter block, which lives only on the `hf-deploy` branch (see
+`CLAUDE.md` → Deployment). Secrets are injected via the Space Secrets UI.

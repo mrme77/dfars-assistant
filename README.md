@@ -172,6 +172,30 @@ Login does a constant-time username check plus `bcrypt.checkpw`, returns a
 generic error, and applies a short lockout after repeated failures. Sessions are
 held in `st.session_state`, so a hard refresh requires signing in again.
 
+## Deployment
+
+The same code lives on two git remotes:
+
+- **GitHub** — `github.com/mrme77/dfars-assistant` (source of truth, clean README).
+- **Hugging Face Space** — `huggingface.co/spaces/mrme77/dfars-assistant`, run as a
+  **Docker** Space (HF no longer offers a native Streamlit SDK). `Dockerfile`
+  serves Streamlit on port 7860; `.dockerignore` keeps `.env`/venv/tests out of
+  the image.
+
+HF requires a YAML frontmatter block in `README.md` (`sdk: docker`,
+`app_port: 7860`) or the Space reports `CONFIG_ERROR`. To keep GitHub's README
+clean, that block lives only on the `hf-deploy` branch, which is pushed to HF
+`main`:
+
+```bash
+git push dfars-assistant main                  # GitHub (clean README)
+git checkout hf-deploy && git merge main \
+  && git push hf hf-deploy:main && git checkout main   # HF (with frontmatter)
+```
+
+Runtime secrets (`OPENROUTER_API_KEY`, `DFARS_AUTH_USERNAME`,
+`DFARS_AUTH_PASSWORD_HASH`) are set in the Space **Secrets** UI — never committed.
+
 ## Testing
 
 ```bash
