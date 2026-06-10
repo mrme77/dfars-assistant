@@ -168,22 +168,6 @@ html, body, [class*="css"], .stApp { font-family: var(--sans); }
   border-color: rgba(224,179,65,.5); color: var(--amber); background: var(--surface-2); transform: none;
 }
 
-/* ---- Help popover ---- */
-[data-testid="stPopover"] > button {
-  background: transparent; color: var(--muted); border: 1px dashed var(--line);
-  border-radius: 9px; font-family: var(--mono); font-size: .76rem; font-weight: 500;
-  letter-spacing: .02em; padding: .4rem .8rem; box-shadow: none;
-}
-[data-testid="stPopover"] > button:hover {
-  border-color: rgba(224,179,65,.5); color: var(--amber); background: var(--surface-2);
-  transform: none; filter: none;
-}
-[data-testid="stPopoverBody"] {
-  background: var(--surface) !important; border: 1px solid var(--line) !important;
-  border-radius: var(--radius) !important;
-}
-[data-testid="stPopoverBody"] .stMarkdown { font-size: .86rem; line-height: 1.55; }
-
 /* ---- Inputs ---- */
 .stTextArea textarea {
   background: var(--surface) !important; color: var(--ink) !important;
@@ -277,7 +261,7 @@ def label(text: str) -> str:
 
 
 def help_markdown() -> str:
-    """Return the 'how to use' guide shown in the help popover."""
+    """Return the 'how to use' guide shown in the help expander."""
     return (
         "**What this is.** A research assistant over the DFARS regulation. It "
         "retrieves the most relevant sections for your question and answers from "
