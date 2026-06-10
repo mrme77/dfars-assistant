@@ -85,11 +85,23 @@ Two git remotes hold the same code:
 **Dual-branch quirk:** GitHub `main` has a clean README; HF **requires** a YAML
 frontmatter block in `README.md` (`sdk: docker`, `app_port: 7860`) or the Space
 fails with `CONFIG_ERROR`. That frontmatter lives only on the **`hf-deploy`**
-branch, which is pushed to HF `main`. So:
+branch, which is pushed to HF `main`.
+
+**Sync is a snapshot, not a plain merge.** `main`'s history contains raw PNG
+screenshots (`docs/images/*.png`), and HF's pre-receive hook rejects any push
+whose history contains non-LFS binaries — even if the tip tree drops them. So
+the merged tree is re-committed onto the previous `hf-deploy` tip with
+`reset --soft`, which keeps `main`'s commits (and the PNG blobs) out of the push:
 
 ```bash
 git push dfars-assistant main                 # GitHub (clean)
-git checkout hf-deploy && git merge main && git push hf hf-deploy:main && git checkout main
+git checkout hf-deploy
+PREV=$(git rev-parse HEAD)
+git merge main --no-commit --no-ff
+git rm -r -f --ignore-unmatch docs/images     # HF rejects raw binaries
+git commit -m "tmp merge"
+git reset --soft "$PREV" && git commit -m "deploy: sync main (<what changed>)"
+git push hf hf-deploy:main && git checkout main
 ```
 
 `Dockerfile` runs Streamlit on port 7860. Runtime secrets (`OPENROUTER_API_KEY`,
